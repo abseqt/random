@@ -1,0 +1,97 @@
+import random
+
+##########################################
+# 1. dumping data to excel
+#   1.1 x,y coordinates for plotting
+# 2.
+##########################################
+
+stockName = input("Name of the Stock?\n")
+
+#helping counter
+counterAdd = int(0)
+counterRem = int(0)
+counterNil = int(0)
+
+#initial stock price
+Price = int(150)
+
+#propabilities for Px change per day
+
+propaDayUp = range(0, 19, 1)
+propaDayDown = range(20, 53, 1)
+dayVolatilityModifier = int(5)
+
+#propabilities for price change during per second
+propaSecondUp = range(-10, 20, 1)
+propaSecondDown = range(21, 42, 1)
+
+stockPxAvg = int(0)
+
+#number of tests
+mutat = int(100)
+
+#trading session time
+timeStampOpen = int(0)
+timeStampClose = int(28800)
+
+for i in range(mutat):
+    dayVolatility = random.randrange(0, 100)
+    stockPx = Price
+    stockChg = random.randrange(1, 100) / 100000
+    secondVolatility = random.randrange(0, 100, 1)
+
+#if it is a good day, and the stock is more likely to increase
+    if dayVolatility in propaDayUp:
+        for i in range(timeStampOpen, timeStampClose, 1):
+            if secondVolatility-dayVolatilityModifier in propaSecondUp:
+                stockPx += stockChg
+                counterAdd += 1
+            elif secondVolatility-dayVolatilityModifier in propaSecondDown:
+                stockPx -= stockChg
+                counterRem += 1
+            else:
+                counterNil += 1
+
+# if it is a bad day, and the stock is more likely to decrease
+    elif dayVolatility in propaDayDown:
+        for i in range(timeStampOpen, timeStampClose, 1):
+            if secondVolatility+dayVolatilityModifier in propaSecondUp:
+                stockPx += stockChg
+                counterAdd += 1
+            elif secondVolatility+dayVolatilityModifier in propaSecondDown:
+                stockPx -= -stockChg
+                counterRem += 1
+            else:
+                counterNil += 1
+
+# if it is a neutral day
+    else:
+        for i in range(timeStampOpen, timeStampClose, 1):
+            if secondVolatility in propaSecondUp:
+                stockPx += stockChg
+                counterAdd += 1
+            elif secondVolatility in propaSecondDown:
+                stockPx -= stockChg
+                counterRem += 1
+            else:
+                counterNil += 1
+
+    stockPxAvg = stockPxAvg + stockPx
+
+
+#final price of the stock throughout the day
+finalPx = stockPxAvg/mutat
+
+#stock name
+print(stockName)
+
+#print stock EoD stock price
+print("%5.2F CHF" % (finalPx))
+print("change: %5.2f" % (((finalPx-150)/150)*100))
+
+#print px changes times, corresponds with propabilities apparently
+counterTotal = counterNil+counterRem+counterAdd
+print("Rise times %", counterAdd/counterTotal)
+print("Decrease times %", counterRem/counterTotal)
+print("No change times %", counterNil/counterTotal)
